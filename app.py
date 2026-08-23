@@ -2,6 +2,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import requests
 import streamlit as st
 from sklearn.ensemble import IsolationForest, RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
@@ -11,10 +12,18 @@ from sklearn.preprocessing import StandardScaler
 st.set_page_config(page_title="Credit Card Fraud Detection", page_icon="!", layout="wide")
 DATA_FILE = Path(__file__).with_name("creditcard.csv")
 TARGET_COLUMN = "Class"
+DATA_URL = "https://media.githubusercontent.com/media/Uday844113/fraud_detection/main/creditcard.csv"
 
 
 @st.cache_data
 def load_data(file_path: str) -> pd.DataFrame:
+	with open(file_path, "rb") as file:
+		first_line = file.readline().decode("utf-8", errors="ignore").strip()
+	if first_line == "version https://git-lfs.github.com/spec/v1":
+		response = requests.get(DATA_URL, timeout=120)
+		response.raise_for_status()
+		from io import BytesIO
+		return pd.read_csv(BytesIO(response.content))
 	return pd.read_csv(file_path)
 
 
